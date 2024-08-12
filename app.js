@@ -22,23 +22,23 @@ const allowedOrigins = [
   app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); 
 //getting jwt token from auth0
-const jwtCheck = jwt({
-      secret: jwksRsa.expressJwtSecret({
-      cache: true,
-      rateLimit: true,
-      jwksRequestsPerMinute: 5,
-      jwksUri: `https://dev-vd2n3gc57jtwv2md.us.auth0.com/.well-known/jwks.json`
-    }),
-    audience: 'http://sdpbackend-c3akgye9ceauethh.southafricanorth-01.azurewebsites.net/',
-    issuer: `https://dev-vd2n3gc57jtwv2md.us.auth0.com/`,
-    algorithms: ['RS256']
-  });
+// const jwtCheck = jwt({
+//       secret: jwksRsa.expressJwtSecret({
+//       cache: true,
+//       rateLimit: true,
+//       jwksRequestsPerMinute: 5,
+//       jwksUri: `https://dev-vd2n3gc57jtwv2md.us.auth0.com/.well-known/jwks.json`
+//     }),
+//     audience: 'http://sdpbackend-c3akgye9ceauethh.southafricanorth-01.azurewebsites.net/',
+//     issuer: `https://dev-vd2n3gc57jtwv2md.us.auth0.com/`,
+//     algorithms: ['RS256']
+//   });
   
  
 app.get('/', (req, res) => {
   res.send('Hello, Yoooo ma se!');
 });
-app.use(jwtCheck);
+//app.use(jwtCheck);
 app.get('/hello', (req, res) => {
     res.send('Hello this shouldnt be working !');
   });
