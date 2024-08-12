@@ -30,7 +30,7 @@ const jwtCheck = jwt({
       jwksUri: `https://dev-vd2n3gc57jtwv2md.us.auth0.com/.well-known/jwks.json`
     }),
     audience: 'http://sdpbackend-c3akgye9ceauethh.southafricanorth-01.azurewebsites.net/',
-    issuer: `https://dev-vd2n3gc57jtwv2md.us.auth0.com/`,
+    issuer: `https://dev-vd2n3gc57jtwv2md.us.auth0.com/api/v2/`,
     algorithms: ['RS256']
   });
   
