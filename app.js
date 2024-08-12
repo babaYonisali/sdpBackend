@@ -6,8 +6,7 @@ const jwksRsa=require('jwks-rsa')
 const cors= require('cors')
 app.use(express.json());
 const allowedOrigins = [
-    'http://localhost:3000', // Add your local development URL here
-    'http://localhost:3001'  // If your local frontend runs on a different port, add it here
+    'http://localhost:3000'  // If your local frontend runs on a different port, add it here
   ];
   const corsOptions = {
     origin: (origin, callback) => {
