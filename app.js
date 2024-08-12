@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 const {expressjwt:jwt}=require('express-jwt')
 const jwksRsa=require('jwks-rsa')
 const cors= require('cors')
@@ -27,14 +27,13 @@ const jwtCheck = jwt({
       cache: true,
       rateLimit: true,
       jwksRequestsPerMinute: 5,
-      jwksUri: `https://dev-vd2n3gc57jtwv2md.us.auth0.com/api/v2/.well-known/jwks.json`
+      jwksUri: `https://dev-vd2n3gc57jtwv2md.us.auth0.com/.well-known/jwks.json`
     }),
-    audience: 'https://sdpbackend-c3akgye9ceauethh.southafricanorth-01.azurewebsites.net/',
+    audience: 'http://sdpbackend-c3akgye9ceauethh.southafricanorth-01.azurewebsites.net/',
     issuer: `https://dev-vd2n3gc57jtwv2md.us.auth0.com/`,
     algorithms: ['RS256']
   });
   
- app.use(jwtCheck);
  
 app.get('/', (req, res) => {
   res.send('Hello, Yoooo ma se!');
