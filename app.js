@@ -9,6 +9,16 @@ const allowedOrigins = [
     'http://localhost:3000', // Add your local development URL here
     'http://localhost:3001'  // If your local frontend runs on a different port, add it here
   ];
+  const corsOptions = {
+    origin: (origin, callback) => {
+        if (allowedOrigins.includes(origin) || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    optionsSuccessStatus: 200
+  };
   app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); 
 //getting jwt token from auth0
