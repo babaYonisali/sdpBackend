@@ -29,6 +29,10 @@ const jwtCheck = jwt({
 app.get('/', (req, res) => {
   res.send('Hello, Yoooo ma se!');
 });
+app.use(jwtCheck);
+app.get('/hello', (req, res) => {
+    res.send('Hello this shouldnt be working !');
+  });
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
