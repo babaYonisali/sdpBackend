@@ -39,6 +39,18 @@ const jwtCheck = jwt({
   });
   
  
+
+
+  // app.post('/signUp', async (req, res) => {
+    //   const {userID} = req.body;
+    //   try {
+    //       await testModel.insertMany([req.body]); // Using an array as insertMany expects an array
+    //       res.status(201).json({ message: 'User added successfully' });
+    //   } catch (error) {
+    //       res.status(500).json({ message: 'Error adding user', error: error.message });
+    //   }
+    // });
+    
 app.get('/', (req, res) => {
   res.send('Hello, Yoooo ma se!');
 });
