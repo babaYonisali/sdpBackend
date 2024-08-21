@@ -54,6 +54,7 @@ const jwtCheck = jwt({
 app.get('/', (req, res) => {
   res.send('Hello, Yoooo ma se!');
 });
+app.use(jwtCheck);
 app.get('/viewRestaurants', async (req, res) => {
   try{
     const restaurants= await restaurantModel.find({});
@@ -72,7 +73,6 @@ app.post('/addRestaurants',async (req,res)=>{
   }
 });
 
-app.use(jwtCheck);
 app.get('/hello', (req, res) => {
     res.send('Hello this shouldnt be working !');
   });
