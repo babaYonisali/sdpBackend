@@ -57,7 +57,7 @@ app.get('/', (req, res) => {
 });
 
 
-//app.use(jwtCheck);
+app.use(jwtCheck);
 
 app.get('/viewRestaurants', async (req, res) => {
   try{
