@@ -10,6 +10,8 @@ app.use(express.json());
 const testModel=require("./models/testModel")
 const restaurantModel=require("./models/restaurantModel")
 const menuItemModel=require("./models/menuItemModel")
+const reviewModel=require("./models/reviewModel")
+const reservationModel=require("./models/reservationModel")
 
 const allowedOrigins = [
     'http://localhost:3000'  // If your local frontend runs on a different port, add it here
@@ -97,6 +99,37 @@ app.post('/viewMenuItems', async (req, res) => { // Change to POST request
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
   }
 });
+app.post('/addReview', async (req, res) => {
+  try {
+    const { restaurant, review, comment } = req.body;
+    await reviewModel.insertMany([req.body]);
+    const reviews = await reviewModel.find({ restaurant });
+    const totalReviews = reviews.length;
+    let averageRating = 5; // Default rating if there are no reviews
+    if (totalReviews > 0) {
+      const sumRatings = reviews.reduce((sum, review) => sum + review.rating, 0);
+      averageRating = Math.round(sumRatings / totalReviews);
+    }
+    await restaurantModel.findOneAndUpdate(
+      { name: restaurant },
+      { rating: averageRating },
+      { new: true } // Return the updated document
+    );
+    res.status(200).send({ message: 'Review added and restaurant rating updated', averageRating });
+  } catch (error) {
+    res.status(500).send({ message: 'Server error processing the request', error: error.message });
+  }
+});
+app.post('/addReservation',async (req,res)=>{
+  try{
+    //console.log(req.body)
+    await reservationModel.insertMany(req.body);
+    res.status(200).send({ message: 'Items added successfully'});
+  }catch (error){
+    res.status(500).send({ message: 'Server error processing the request', error: error.message });
+  }
+});
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
