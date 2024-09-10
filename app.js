@@ -64,7 +64,7 @@ app.get('/', (req, res) => {
 });
 
 
-// app.use(jwtCheck);
+app.use(jwtCheck);
 app.post('/signUp', async (req, res) => {
   const { userID} = req.body;
   try {
