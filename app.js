@@ -78,7 +78,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const updateOrderStatus = async () => {
+const updateOrderStatus = async (req, res, next) => {
   const now = new Date();
   const thresholdTime = new Date(now.getTime() - (30 * 60 * 1000)); // 30 minutes ago
   try {
