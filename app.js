@@ -14,7 +14,10 @@ const reviewModel=require("./models/reviewModel")
 const reservationModel=require("./models/reservationModel")
 const orderModel=require("./models/orderModel")
 const userModel=require("./models/userModel")
+const voucherModel=require("./models/voucherModel")
 const cron = require('node-cron');
+const nodemailer = require('nodemailer');
+const mongoose = require('mongoose');
 const allowedOrigins = [
     'http://localhost:3000'  // If your local frontend runs on a different port, add it here
   ];
@@ -61,7 +64,7 @@ app.get('/', (req, res) => {
 });
 
 
-app.use(jwtCheck);
+// app.use(jwtCheck);
 app.post('/signUp', async (req, res) => {
   const { userID} = req.body;
   try {
@@ -78,6 +81,7 @@ app.post('/signUp', async (req, res) => {
       res.status(500).json({ message: 'Error adding user', error: error.message });
   }
 });
+
 
 app.get('/viewRestaurants', async (req, res) => {
   try{
@@ -97,6 +101,34 @@ app.post('/addRestaurants',async (req,res)=>{
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
   }
 });
+app.post('/addVouchers',async (req,res)=>{
+  try{
+    //console.log(req.body)
+    await voucherModel.insertMany(req.body);
+    res.status(200).send({ message: 'Restaurants added successfully'});
+  }catch (error){
+    res.status(500).send({ message: 'Server error processing the request', error: error.message });
+  }
+});
+app.post('/addCredits', async (req, res) => {
+  const { userID, vouch } = req.body; // Expecting userID and vouch in the request body
+  try {
+    const voucher = await voucherModel.findOne({ vouch });
+    if (!voucher) {
+      return res.status(404).send({ message: 'Voucher not found' });
+    }
+    const user = await userModel.findOne({ userID });
+    if (!user) {
+      return res.status(404).send({ message: 'User not found' });
+    }
+    user.credits += voucher.credits;
+    await user.save();
+    res.status(200).send({ message: 'Credits added successfully', updatedCredits: user.credits });
+  } catch (error) {
+    res.status(500).send({ message: 'Server error processing the request', error: error.message });
+  }
+});
+
 
 app.post('/addMenuItems',async (req,res)=>{
   try{
@@ -138,6 +170,24 @@ app.post('/addReview', async (req, res) => {
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
   }
 });
+
+app.post('/completeOrder', async (req, res) => {
+  const { orderID } = req.body; // Expecting the orderID in the request body
+  try {
+    // Use updateOne to update the status of the order with the given orderID
+    const result = await orderModel.updateOne(
+      { orderID }, // Match based on orderID field
+      { $set: { status: 'completed' } } // Update the status to 'completed'
+    );
+    if (result.nModified === 0) {
+      return res.status(404).send({ message: 'Order not found or already completed' });
+    }
+    res.status(200).send({ message: 'Order status updated to completed' });
+  } catch (error) {
+    res.status(500).send({ message: 'Server error processing the request', error: error.message });
+  }
+});
+
 app.post('/addReservation',async (req,res)=>{
   try{
     //console.log(req.body)
@@ -175,6 +225,40 @@ app.post('/viewOrders', async (req, res) => {
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
   }
 });
+app.post('/viewReservations', async (req, res) => {
+  const { userID } = req.body;
+  try{
+    const reservations= await reservationModel.find({userID});
+    res.status(200).send(reservations);
+  }catch(error){
+    res.status(500).send({ message: 'Server error processing the request', error: error.message });
+  }
+});
+app.post('/viewReviews', async (req, res) => {
+  const { restaurant } = req.body;
+  try{
+    const reviews= await reviewModel.find({restaurant});
+    res.status(200).send(reviews);
+  }catch(error){
+    res.status(500).send({ message: 'Server error processing the request', error: error.message });
+  }
+});
+app.post('/deleteReservation', async (req, res) => {
+  const { _id } = req.body; // Use _id from the request body to identify the reservation
+  try {
+    // Find the reservation by its _id and delete it
+    const reservationId = new mongoose.Types.ObjectId(_id);
+    const deletedReservation = await reservationModel.findByIdAndDelete(reservationId);
+    if (!deletedReservation) {
+      return res.status(404).send({ message: 'Reservation not found' });
+    }
+    res.status(200).send({ message: 'Reservation deleted successfully', deletedReservation });
+  } catch (error) {
+    res.status(500).send({ message: 'Server error processing the request', error: error.message });
+  }
+});
+
+
 app.post('/viewUser', async (req, res) => {
   const { userID } = req.body;
   try{
@@ -191,30 +275,52 @@ const convertToDateTime = (date, time) => {
   dateTime.setHours(hours, minutes, 0, 0);
   return dateTime;
 };
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'compsciwarriors@gmail.com', // Your Gmail address
+    pass: 'lept uods rcrc vznf',    // Your App Password
+  },
+});
+
 const updateOrderStatus = async () => {
   const now = new Date();
   const thresholdTime = new Date(now.getTime() - (30 * 60 * 1000)); // 30 minutes ago
   try {
+    console.log('Checking pending orders for status update...');
     // Find all orders where status is 'pending' and the combined date and time is older than thresholdTime
     const orders = await orderModel.find({ status: 'pending' });
     const updatePromises = orders.map(async (order) => {
       const orderDateTime = convertToDateTime(order.date, order.time);
       if (orderDateTime <= thresholdTime) {
+        console.log(`Updating order ${order._id} to 'ready for collection'`);
+        // Update order status to 'ready for collection'
         await orderModel.updateOne(
           { _id: order._id },
-          { $set: { status: 'completed' } }
+          { $set: { status: 'ready for collection' } }
         );
+        const mailOptions = {
+          from: 'compsciwarriors@gmail.com',
+          to: order.userID, // Assuming the user's email is stored in the order.userID field
+          subject: `Order from ${order.restaurant} ready for collection`,
+          html: `<b>Hello,</b><p>Your order from ${order.restaurant} is ready for collection. Don't forget to click <b>"collected"</b> once you have picked it up!</p>`,
+        };
+        try {
+          console.log(`Sending email to ${order.userID}...`);
+          const info = await transporter.sendMail(mailOptions);
+          console.log('Email sent: ' + info.response);
+        } catch (emailError) {
+          console.error('Error sending email:', emailError);
+        }
       }
     });
-
     await Promise.all(updatePromises);
-    console.log('Orders updated to "completed".');
+    console.log('Orders updated to "ready for collection".');
   } catch (error) {
     console.error('Error updating orders:', error);
   }
 };
-
-// Set up the cron job to run every minute
 cron.schedule('* * * * *', updateOrderStatus); // Runs every minute
 
 app.listen(port, () => {
