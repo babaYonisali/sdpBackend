@@ -18,6 +18,7 @@ const voucherModel=require("./models/voucherModel")
 const cron = require('node-cron');
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
+const { DateTime } = require('luxon');
 const allowedOrigins = [
     'http://localhost:3000'  // If your local frontend runs on a different port, add it here
   ];
@@ -79,8 +80,8 @@ const transporter = nodemailer.createTransport({
 });
 
 const updateOrderStatus = async (req, res, next) => {
-  const now = new Date();
-  const thresholdTime = new Date(now.getTime() - (2 * 60 * 1000)); // 30 minutes ago
+  const now = DateTime.now().setZone('Africa/Johannesburg');
+  const thresholdTime = now.minus({ minutes: 2 }); // 30 minutes ago
   try {
     console.log('Checking pending orders for status update...');
     // Find all orders where status is 'pending' and the combined date and time is older than thresholdTime
@@ -117,7 +118,7 @@ const updateOrderStatus = async (req, res, next) => {
   }
 };
 app.use(updateOrderStatus);
-app.use(jwtCheck);
+// app.use(jwtCheck);
 app.post('/signUp', async (req, res) => {
   const { userID} = req.body;
   try {
