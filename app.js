@@ -197,8 +197,8 @@ app.post('/addReservation',async (req,res)=>{
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
   }
 });
-app.post('/addOrder',async (req,res)=>{
-  const { userID, total } = req.body;
+app.post('/addOrder', async (req, res) => {
+  const { userID, total, items, orderID, email,restaurant,date, time } = req.body; // Expect email in the request body
   try {
     const user = await userModel.findOne({ userID });
     if (!user) {
@@ -209,13 +209,27 @@ app.post('/addOrder',async (req,res)=>{
     }
     user.credits -= total;
     await user.save(); // Save the updated user document
-    // Insert the new order
-    await orderModel.insertMany(req.body);
-    res.status(200).send({ message: 'Items added successfully' });
+    // Create the order with only the required fields
+    const orderData = {
+      userID:email, // Use the userID from the request body (as per your instructions)
+      orderID,
+      items, // Items being ordered
+      total,
+      time, // Additional field for delivery address
+      status: 'pending', // Set default status to 'pending'
+      date,
+      restaurant, // Timestamp for when the order was placed
+    };
+
+    // Insert the new order into the database
+    await orderModel.create(orderData);
+
+    res.status(200).send({ message: 'Order added successfully', order: orderData });
   } catch (error) {
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
   }
 });
+
 app.post('/viewOrders', async (req, res) => {
   const { userID } = req.body;
   try{
