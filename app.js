@@ -63,8 +63,62 @@ app.get('/', (req, res) => {
   res.send('This is about as far as you are getting to our data!');
 });
 
+const convertToDateTime = (date, time) => {
+  const [hours, minutes] = time.split(':').map(Number);
+  const dateTime = new Date(date);
+  dateTime.setHours(hours, minutes, 0, 0);
+  return dateTime;
+};
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'compsciwarriors@gmail.com', // Your Gmail address
+    pass: 'lept uods rcrc vznf',    // Your App Password
+  },
+});
+
+const updateOrderStatus = async () => {
+  const now = new Date();
+  const thresholdTime = new Date(now.getTime() - (30 * 60 * 1000)); // 30 minutes ago
+  try {
+    console.log('Checking pending orders for status update...');
+    // Find all orders where status is 'pending' and the combined date and time is older than thresholdTime
+    const orders = await orderModel.find({ status: 'pending' });
+    const updatePromises = orders.map(async (order) => {
+      const orderDateTime = convertToDateTime(order.date, order.time);
+      if (orderDateTime <= thresholdTime) {
+        console.log(`Updating order ${order._id} to 'ready for collection'`);
+        // Update order status to 'ready for collection'
+        await orderModel.updateOne(
+          { _id: order._id },
+          { $set: { status: 'ready for collection' } }
+        );
+        const mailOptions = {
+          from: 'compsciwarriors@gmail.com',
+          to: order.userID, // Assuming the user's email is stored in the order.userID field
+          subject: `Order from ${order.restaurant} ready for collection`,
+          html: `<b>Hello,</b><p>Your order from ${order.restaurant} is ready for collection. Don't forget to click <b>"collected"</b> once you have picked it up!</p>`,
+        };
+        try {
+          console.log(`Sending email to ${order.userID}...`);
+          const info = await transporter.sendMail(mailOptions);
+          console.log('Email sent: ' + info.response);
+        } catch (emailError) {
+          console.error('Error sending email:', emailError);
+        }
+      }
+    });
+    await Promise.all(updatePromises);
+    console.log('Orders updated to "ready for collection".');
+    next();
+  } catch (error) {
+    console.error('Error updating orders:', error);
+  }
+};
 
 app.use(jwtCheck);
+app.use(updateOrderStatus);
 app.post('/signUp', async (req, res) => {
   const { userID} = req.body;
   try {
@@ -283,59 +337,8 @@ app.post('/viewUser', async (req, res) => {
   }
 });
 
-const convertToDateTime = (date, time) => {
-  const [hours, minutes] = time.split(':').map(Number);
-  const dateTime = new Date(date);
-  dateTime.setHours(hours, minutes, 0, 0);
-  return dateTime;
-};
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'compsciwarriors@gmail.com', // Your Gmail address
-    pass: 'lept uods rcrc vznf',    // Your App Password
-  },
-});
-
-const updateOrderStatus = async () => {
-  const now = new Date();
-  const thresholdTime = new Date(now.getTime() - (30 * 60 * 1000)); // 30 minutes ago
-  try {
-    console.log('Checking pending orders for status update...');
-    // Find all orders where status is 'pending' and the combined date and time is older than thresholdTime
-    const orders = await orderModel.find({ status: 'pending' });
-    const updatePromises = orders.map(async (order) => {
-      const orderDateTime = convertToDateTime(order.date, order.time);
-      if (orderDateTime <= thresholdTime) {
-        console.log(`Updating order ${order._id} to 'ready for collection'`);
-        // Update order status to 'ready for collection'
-        await orderModel.updateOne(
-          { _id: order._id },
-          { $set: { status: 'ready for collection' } }
-        );
-        const mailOptions = {
-          from: 'compsciwarriors@gmail.com',
-          to: order.userID, // Assuming the user's email is stored in the order.userID field
-          subject: `Order from ${order.restaurant} ready for collection`,
-          html: `<b>Hello,</b><p>Your order from ${order.restaurant} is ready for collection. Don't forget to click <b>"collected"</b> once you have picked it up!</p>`,
-        };
-        try {
-          console.log(`Sending email to ${order.userID}...`);
-          const info = await transporter.sendMail(mailOptions);
-          console.log('Email sent: ' + info.response);
-        } catch (emailError) {
-          console.error('Error sending email:', emailError);
-        }
-      }
-    });
-    await Promise.all(updatePromises);
-    console.log('Orders updated to "ready for collection".');
-  } catch (error) {
-    console.error('Error updating orders:', error);
-  }
-};
-cron.schedule('* * * * *', updateOrderStatus); // Runs every minute
+// cron.schedule('* * * * *', updateOrderStatus); // Runs every minute
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
