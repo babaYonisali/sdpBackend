@@ -116,9 +116,8 @@ const updateOrderStatus = async (req, res, next) => {
     console.error('Error updating orders:', error);
   }
 };
-
-app.use(jwtCheck);
 app.use(updateOrderStatus);
+app.use(jwtCheck);
 app.post('/signUp', async (req, res) => {
   const { userID} = req.body;
   try {
