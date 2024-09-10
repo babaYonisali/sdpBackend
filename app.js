@@ -79,7 +79,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const updateOrderStatus = async (req, res, next) => {
+const updateOrderStatus = async () => {
   const now = DateTime.now().setZone('Africa/Johannesburg');
   const thresholdTime = now.minus({ minutes: 2 }); // 30 minutes ago
   try {
@@ -112,12 +112,11 @@ const updateOrderStatus = async (req, res, next) => {
     });
     await Promise.all(updatePromises);
     console.log('Orders updated to "ready for collection".');
-    next();
   } catch (error) {
     console.error('Error updating orders:', error);
   }
 };
-app.use(updateOrderStatus);
+
 // app.use(jwtCheck);
 app.post('/signUp', async (req, res) => {
   const { userID} = req.body;
@@ -338,7 +337,7 @@ app.post('/viewUser', async (req, res) => {
 });
 
 
-// cron.schedule('* * * * *', updateOrderStatus); // Runs every minute
+cron.schedule('* * * * *', updateOrderStatus); // Runs every minute
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
