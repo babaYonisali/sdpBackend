@@ -89,6 +89,7 @@ const updateOrderStatus = async () => {
     const orders = await orderModel.find({ status: 'pending' });
     const updatePromises = orders.map(async (order) => {
       const orderDateTime = convertToDateTime(order.date, order.time);
+      console.log(orderDateTime," Thresholdtime ",thresholdTime)
       if (orderDateTime <= thresholdTime) {
         console.log(`Updating order ${order._id} to 'ready for collection'`);
         // Update order status to 'ready for collection'
