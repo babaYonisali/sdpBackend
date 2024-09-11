@@ -20,7 +20,8 @@ const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 const { DateTime } = require('luxon');
 const allowedOrigins = [
-    'http://localhost:3000'  // If your local frontend runs on a different port, add it here
+    'http://localhost:3000',
+    'https://calm-bush-0adbb231e.5.azurestaticapps.net/'
   ];
   const corsOptions = {
     origin: (origin, callback) => {
@@ -133,7 +134,7 @@ const updateOrderStatus = async () => {
     console.error('Error updating orders:', error);
   }
 };
-// app.use(jwtCheck);
+app.use(jwtCheck);
 app.post('/signUp', async (req, res) => {
   const { userID} = req.body;
   try {
