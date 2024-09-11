@@ -21,7 +21,7 @@ const mongoose = require('mongoose');
 const { DateTime } = require('luxon');
 const allowedOrigins = [
     'http://localhost:3000',
-    'https://calm-bush-0adbb231e.5.azurestaticapps.net/'
+    'https://calm-bush-0adbb231e.5.azurestaticapps.net'
   ];
   const corsOptions = {
     origin: (origin, callback) => {
