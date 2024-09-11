@@ -76,17 +76,17 @@ const transporter = nodemailer.createTransport({
 
 const convertToDateTime = (date, time) => {
   const [hours, minutes] = time.split(':').map(Number);
-  
-  // Parse the date using JavaScript Date object and then convert to Luxon DateTime
+
+  // Parse the date using JavaScript Date object and then convert to Luxon DateTime with timezone
   const jsDate = new Date(date); // If date is already in Date format
-  const dateTime = DateTime.fromJSDate(jsDate).set({
+  const dateTime = DateTime.fromJSDate(jsDate, { zone: 'Africa/Johannesburg' }).set({
     hour: hours,
     minute: minutes,
     second: 0,
     millisecond: 0
   });
-  
-  return dateTime;
+
+  return dateTime.setZone('Africa/Johannesburg'); // Ensure both DateTime objects are in the same timezone
 };
 const updateOrderStatus = async () => {
   const now = DateTime.now().setZone('Africa/Johannesburg');
