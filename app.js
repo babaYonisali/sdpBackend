@@ -66,9 +66,9 @@ app.get('/', (req, res) => {
 
 const convertToDateTime = (date, time) => {
   const [hours, minutes] = time.split(':').map(Number);
-  const dateTime = new Date(date);
-  dateTime.setHours(hours, minutes, 0, 0);
-  return dateTime;
+  const orderDateTime = DateTime.fromISO(date, { zone: 'Africa/Johannesburg' })
+                                .set({ hour: hours, minute: minutes });
+  return orderDateTime;
 };
 
 const transporter = nodemailer.createTransport({
