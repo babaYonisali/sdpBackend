@@ -64,12 +64,7 @@ app.get('/', (req, res) => {
   res.send('This is about as far as you are getting to our data!');
 });
 
-const convertToDateTime = (date, time) => {
-  const [hours, minutes] = time.split(':').map(Number);
-  const dateTime = new Date(date);
-  dateTime.setHours(hours, minutes, 0, 0);
-  return dateTime;
-};
+
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -79,30 +74,49 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const convertToDateTime = (date, time) => {
+  const [hours, minutes] = time.split(':').map(Number);
+  
+  // Parse the date using JavaScript Date object and then convert to Luxon DateTime
+  const jsDate = new Date(date); // If date is already in Date format
+  const dateTime = DateTime.fromJSDate(jsDate).set({
+    hour: hours,
+    minute: minutes,
+    second: 0,
+    millisecond: 0
+  });
+  
+  return dateTime;
+};
 const updateOrderStatus = async () => {
   const now = DateTime.now().setZone('Africa/Johannesburg');
-  const thresholdTime = now.minus({ minutes: 2 }); // 30 minutes ago
-  console.log(now)
+  const thresholdTime = now.minus({ minutes: 2 }); // 2 minutes ago
+  console.log("Current time:", now);
+  console.log("Threshold time:", thresholdTime);
+
   try {
     console.log('Checking pending orders for status update...');
-    // Find all orders where status is 'pending' and the combined date and time is older than thresholdTime
     const orders = await orderModel.find({ status: 'pending' });
     const updatePromises = orders.map(async (order) => {
       const orderDateTime = convertToDateTime(order.date, order.time);
-      console.log(orderDateTime," Thresholdtime ",thresholdTime)
-      if (orderDateTime <= thresholdTime) {
+      console.log("Order DateTime:", orderDateTime, "Threshold Time:", thresholdTime);
+
+      // Perform a comparison using .valueOf() to compare their timestamp in milliseconds
+      if (orderDateTime.valueOf() <= thresholdTime.valueOf()) {
         console.log(`Updating order ${order._id} to 'ready for collection'`);
-        // Update order status to 'ready for collection'
+
         await orderModel.updateOne(
           { _id: order._id },
           { $set: { status: 'ready for collection' } }
         );
+
         const mailOptions = {
           from: 'compsciwarriors@gmail.com',
-          to: order.userID, // Assuming the user's email is stored in the order.userID field
+          to: order.userID,
           subject: `Order from ${order.restaurant} ready for collection`,
           html: `<b>Hello,</b><p>Your order from ${order.restaurant} is ready for collection. Don't forget to click <b>"collected"</b> once you have picked it up!</p>`,
         };
+
         try {
           console.log(`Sending email to ${order.userID}...`);
           const info = await transporter.sendMail(mailOptions);
@@ -112,13 +126,13 @@ const updateOrderStatus = async () => {
         }
       }
     });
+
     await Promise.all(updatePromises);
     console.log('Orders updated to "ready for collection".');
   } catch (error) {
     console.error('Error updating orders:', error);
   }
 };
-
 // app.use(jwtCheck);
 app.post('/signUp', async (req, res) => {
   const { userID} = req.body;
