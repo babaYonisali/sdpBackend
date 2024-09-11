@@ -82,6 +82,7 @@ const transporter = nodemailer.createTransport({
 const updateOrderStatus = async () => {
   const now = DateTime.now().setZone('Africa/Johannesburg');
   const thresholdTime = now.minus({ minutes: 2 }); // 30 minutes ago
+  console.log(now)
   try {
     console.log('Checking pending orders for status update...');
     // Find all orders where status is 'pending' and the combined date and time is older than thresholdTime
