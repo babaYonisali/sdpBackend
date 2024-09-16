@@ -153,7 +153,7 @@ app.post('/signUp', async (req, res) => {
 });
 
 
-app.get('/viewRestaurants', async (req, res) => {
+app.get('/viewRestaurants', async (req, res) => { 
   try{
     const restaurants= await restaurantModel.find({});
     res.status(200).send(restaurants);
@@ -303,7 +303,7 @@ app.post('/addOrder', async (req, res) => {
 app.post('/viewOrders', async (req, res) => {
   const { userID } = req.body;
   try{
-    const orders= await orderModel.find({userID});
+    const orders= await orderModel.find({userID}); //Retrives all orders for a specific user defined by userID sent in the request body
     res.status(200).send(orders);
   }catch(error){
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
@@ -312,7 +312,7 @@ app.post('/viewOrders', async (req, res) => {
 app.post('/viewReservations', async (req, res) => {
   const { userID } = req.body;
   try{
-    const reservations= await reservationModel.find({userID});
+    const reservations= await reservationModel.find({userID}); //Retrives all reservations for a specific user defined by userID sent in the request body
     res.status(200).send(reservations);
   }catch(error){
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
