@@ -144,7 +144,7 @@ app.post('/signUp', async (req, res) => {
           return res.status(200).json({ message: 'User already exists' });
       }
 
-      // Insert the new user if they don't exist
+      // Insert the new user if they do not exist
       await userModel.insertMany([req.body]); // Using an array as insertMany expects an array
       res.status(201).json({ message: 'User added successfully' });
   } catch (error) {
