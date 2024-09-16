@@ -354,7 +354,7 @@ app.post('/viewUser', async (req, res) => {
 });
 
 
-cron.schedule('* * * * *', updateOrderStatus); // Runs every minute
+cron.schedule('* * * * *', updateOrderStatus); //Runs every minute
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

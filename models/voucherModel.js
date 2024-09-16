@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Define a new schema for the voucher model
 const voucherModelSchema = new mongoose.Schema({
     credits:{
         type: Number,
