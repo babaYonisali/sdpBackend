@@ -1,7 +1,9 @@
 const express = require('express');
 const app = express();
 const connectDB = require('./config/db');
-connectDB();
+if (process.env.NODE_ENV !== 'test') {
+  connectDB();
+}
 const port = process.env.PORT || 3001;
 const {expressjwt:jwt}=require('express-jwt')
 const jwksRsa=require('jwks-rsa')
@@ -260,7 +262,6 @@ app.post('/completeOrder', async (req, res) => {
 
 app.post('/addReservation',async (req,res)=>{
   try{
-    //console.log(req.body)
     await reservationModel.insertMany(req.body);
     res.status(200).send({ message: 'Items added successfully'});
   }catch (error){
@@ -354,8 +355,16 @@ app.post('/viewUser', async (req, res) => {
 });
 
 
-cron.schedule('* * * * *', updateOrderStatus); // Runs every minute
+if (process.env.NODE_ENV !== 'test') {
+  cron.schedule('* * * * *', updateOrderStatus); // Runs every minute
+}
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}
+
+module.exports = app;
+module.exports.updateOrderStatus = updateOrderStatus;
+module.exports.transporter = transporter;
