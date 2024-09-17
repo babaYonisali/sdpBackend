@@ -144,7 +144,7 @@ app.post('/signUp', async (req, res) => {
           return res.status(200).json({ message: 'User already exists' });
       }
 
-      // Insert the new user if they do not exist
+      // Insert the new user if they don't exist
       await userModel.insertMany([req.body]); // Using an array as insertMany expects an array
       res.status(201).json({ message: 'User added successfully' });
   } catch (error) {
@@ -152,8 +152,9 @@ app.post('/signUp', async (req, res) => {
   }
 });
 
+//we make a fecth from the front end to these api end points 
 
-app.get('/viewRestaurants', async (req, res) => { 
+app.get('/viewRestaurants', async (req, res) => {//retrives all restaurants from the database using a GET METHOD 
   try{
     const restaurants= await restaurantModel.find({});
     res.status(200).send(restaurants);
@@ -162,7 +163,7 @@ app.get('/viewRestaurants', async (req, res) => {
   }
 });
 
-app.post('/addRestaurants',async (req,res)=>{
+app.post('/addRestaurants',async (req,res)=>{//ignore
   try{
     //console.log(req.body)
     await restaurantModel.insertMany(req.body);
@@ -171,7 +172,7 @@ app.post('/addRestaurants',async (req,res)=>{
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
   }
 });
-app.post('/addVouchers',async (req,res)=>{
+app.post('/addVouchers',async (req,res)=>{//ignore
   try{
     //console.log(req.body)
     await voucherModel.insertMany(req.body);
@@ -180,7 +181,7 @@ app.post('/addVouchers',async (req,res)=>{
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
   }
 });
-app.post('/addCredits', async (req, res) => {
+app.post('/addCredits', async (req, res) => {//takes the voucher and userid as input checks if the voucher is a valid voucher then adds the credits to that user by user id in the database
   const { userID, vouch } = req.body; // Expecting userID and vouch in the request body
   try {
     const voucher = await voucherModel.findOne({ vouch });
@@ -200,7 +201,7 @@ app.post('/addCredits', async (req, res) => {
 });
 
 
-app.post('/addMenuItems',async (req,res)=>{
+app.post('/addMenuItems',async (req,res)=>{//ignore
   try{
     //console.log(req.body)
     await menuItemModel.insertMany(req.body);
@@ -210,7 +211,7 @@ app.post('/addMenuItems',async (req,res)=>{
   }
 });
 
-app.post('/viewMenuItems', async (req, res) => { // Change to POST request
+app.post('/viewMenuItems', async (req, res) => { //takes in a restaurant and checks the menuitems table for entries from that restaurant and return all of them for that restaruant 
   try {
     const { restaurant } = req.body; // Get the restaurant name from the request body
     const menuItems = await menuItemModel.find({restaurant}); // Find the menu items matching the query
@@ -219,7 +220,7 @@ app.post('/viewMenuItems', async (req, res) => { // Change to POST request
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
   }
 });
-app.post('/addReview', async (req, res) => {
+app.post('/addReview', async (req, res) => {//takes in the parameters seen below and add the review to the review table 
   try {
     const { restaurant, review, comment } = req.body;
     await reviewModel.insertMany([req.body]);
@@ -241,7 +242,7 @@ app.post('/addReview', async (req, res) => {
   }
 });
 
-app.post('/completeOrder', async (req, res) => {
+app.post('/completeOrder', async (req, res) => {//updates the status of order in the order table to completed once the user clicks completed 
   const { orderID } = req.body; // Expecting the orderID in the request body
   try {
     // Use updateOne to update the status of the order with the given orderID
@@ -258,7 +259,7 @@ app.post('/completeOrder', async (req, res) => {
   }
 });
 
-app.post('/addReservation',async (req,res)=>{
+app.post('/addReservation',async (req,res)=>{//adds a reservation to the reservation table 
   try{
     //console.log(req.body)
     await reservationModel.insertMany(req.body);
@@ -267,7 +268,7 @@ app.post('/addReservation',async (req,res)=>{
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
   }
 });
-app.post('/addOrder', async (req, res) => {
+app.post('/addOrder', async (req, res) => {// adds order to the order table 
   const { userID, total, items, orderID, email,restaurant,date, time } = req.body; // Expect email in the request body
   try {
     const user = await userModel.findOne({ userID });
@@ -300,25 +301,25 @@ app.post('/addOrder', async (req, res) => {
   }
 });
 
-app.post('/viewOrders', async (req, res) => {
+app.post('/viewOrders', async (req, res) => {//view all orders
   const { userID } = req.body;
   try{
-    const orders= await orderModel.find({userID}); //Retrives all orders for a specific user defined by userID sent in the request body
+    const orders= await orderModel.find({userID});
     res.status(200).send(orders);
   }catch(error){
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
   }
 });
-app.post('/viewReservations', async (req, res) => {
+app.post('/viewReservations', async (req, res) => {//view all the reservation from the particular user
   const { userID } = req.body;
   try{
-    const reservations= await reservationModel.find({userID}); //Retrives all reservations for a specific user defined by userID sent in the request body
+    const reservations= await reservationModel.find({userID});
     res.status(200).send(reservations);
   }catch(error){
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
   }
 });
-app.post('/viewReviews', async (req, res) => {
+app.post('/viewReviews', async (req, res) => {//view all the reviews
   const { restaurant } = req.body;
   try{
     const reviews= await reviewModel.find({restaurant});
@@ -327,7 +328,7 @@ app.post('/viewReviews', async (req, res) => {
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
   }
 });
-app.post('/deleteReservation', async (req, res) => {
+app.post('/deleteReservation', async (req, res) => {//deletes reservation by the reservation id that is passed from front end
   const { _id } = req.body; // Use _id from the request body to identify the reservation
   try {
     // Find the reservation by its _id and delete it
@@ -343,7 +344,7 @@ app.post('/deleteReservation', async (req, res) => {
 });
 
 
-app.post('/viewUser', async (req, res) => {
+app.post('/viewUser', async (req, res) => {//view user information like credits 
   const { userID } = req.body;
   try{
     const user= await userModel.find({userID});
@@ -354,7 +355,7 @@ app.post('/viewUser', async (req, res) => {
 });
 
 
-cron.schedule('* * * * *', updateOrderStatus); //Runs every minute
+cron.schedule('* * * * *', updateOrderStatus); // Runs every minute
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
