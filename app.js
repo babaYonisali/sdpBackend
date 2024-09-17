@@ -159,7 +159,7 @@ app.get('/viewRestaurants', async (req, res) => {//retrives all restaurants from
     const restaurants= await restaurantModel.find({});
     res.status(200).send(restaurants);
   }catch(error){
-    res.status(500).send({ message: 'Server error processing the request', error: error.message });
+    res.status(500).send({ message: 'Server error processing the request', error: error.message }); //error
   }
 });
 
