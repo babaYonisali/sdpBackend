@@ -134,6 +134,15 @@ const updateOrderStatus = async () => {
     console.error('Error updating orders:', error);
   }
 };
+app.get('/api/viewRestaurants', async (req, res) => {
+  // Retrieves all restaurants from the database using a GET METHOD 
+  try {
+    const restaurants = await restaurantModel.find({}).select('name description -_id');
+    res.status(200).send(restaurants);
+  } catch (error) {
+    res.status(500).send({ message: 'Server error processing the request', error: error.message });
+  }
+});
 app.use(jwtCheck);
 app.post('/signUp', async (req, res) => {
   const { userID} = req.body;
