@@ -11,6 +11,7 @@ const testModel=require("./models/testModel")
 const restaurantModel=require("./models/restaurantModel")
 const menuItemModel=require("./models/menuItemModel")
 const reviewModel=require("./models/reviewModel")
+const locationModel=require("./models/locationModel")
 const reservationModel=require("./models/reservationModel")
 const orderModel=require("./models/orderModel")
 const userModel=require("./models/userModel")
@@ -139,6 +140,23 @@ app.get('/api/viewRestaurants', async (req, res) => {
   try {
     const restaurants = await restaurantModel.find({}).select('name description -_id');
     res.status(200).send(restaurants);
+  } catch (error) {
+    res.status(500).send({ message: 'Server error processing the request', error: error.message });
+  }
+});
+app.post('/addLocations',async (req,res)=>{//ignore
+  try{
+    //console.log(req.body)
+    await locationModel.insertMany(req.body);
+    res.status(200).send({ message: 'Restaurants added successfully'});
+  }catch (error){
+    res.status(500).send({ message: 'Server error processing the request', error: error.message });
+  }
+});
+app.get('/api/viewLocations', async (req, res) => { //takes in a restaurant and checks the menuitems table for entries from that restaurant and return all of them for that restaruant 
+  try { 
+    const locationItems = await locationModel.find({}); 
+    res.status(200).send(locationItems); 
   } catch (error) {
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
   }
