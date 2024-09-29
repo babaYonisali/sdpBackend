@@ -144,33 +144,7 @@ app.get('/api/viewRestaurants', async (req, res) => {
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
   }
 });
-app.get('/api/proxy', (req, res) => {
-  const restaurant = req.query.restaurant;  // Get the restaurant name from the query parameters
-  if (!restaurant) {
-    return res.status(400).send({ message: 'Restaurant name is required' });
-  }
 
-  // Construct the external API URL dynamically based on the restaurant name
-  const apiUrl = `http://ec2-52-40-184-137.us-west-2.compute.amazonaws.com/api/v1/navigation/poi/name/${encodeURIComponent(restaurant)}`;
-
-  // Make the request to the HTTP API
-  http.get(apiUrl, (apiRes) => {
-    let data = '';
-
-    // Collect the data from the API response
-    apiRes.on('data', (chunk) => {
-      data += chunk;
-    });
-
-    // Send the complete API response back to the client
-    apiRes.on('end', () => {
-      res.status(200).send(data);
-    });
-  }).on('error', (err) => {
-    console.error('Error fetching data:', err);
-    res.status(500).send({ message: 'Error fetching data from API' });
-  });
-});
 app.post('/addLocations',async (req,res)=>{//ignore
   try{
     //console.log(req.body)
@@ -187,6 +161,38 @@ app.get('/api/viewLocations', async (req, res) => { //takes in a restaurant and 
   } catch (error) {
     res.status(500).send({ message: 'Server error processing the request', error: error.message });
   }
+});
+app.get('/api/proxy', (req, res) => {
+  const restaurant = req.query.restaurant;  // Get the restaurant name from the query parameters
+  if (!restaurant) {
+    return res.status(400).send({ message: 'Restaurant name is required' });
+  }
+
+  // Log the restaurant name and the API URL being called
+  console.log(`Fetching data for restaurant: ${restaurant}`);
+  
+  const apiUrl = `http://ec2-52-40-184-137.us-west-2.compute.amazonaws.com/api/v1/navigation/poi/name/${encodeURIComponent(restaurant)}`;
+  
+  console.log(`Calling external API: ${apiUrl}`);
+
+  // Make the request to the HTTP API
+  http.get(apiUrl, (apiRes) => {
+    let data = '';
+
+    // Collect the data from the API response
+    apiRes.on('data', (chunk) => {
+      data += chunk;
+    });
+
+    // Send the complete API response back to the client
+    apiRes.on('end', () => {
+      console.log(`Response from API: ${data}`);
+      res.status(200).send(data);
+    });
+  }).on('error', (err) => {
+    console.error('Error fetching data from external API:', err.message);
+    res.status(500).send({ message: 'Error fetching data from API', error: err.message });
+  });
 });
 app.use(jwtCheck);
 app.post('/signUp', async (req, res) => {
