@@ -6,6 +6,7 @@ const port = process.env.PORT || 3001;
 const {expressjwt:jwt}=require('express-jwt')
 const jwksRsa=require('jwks-rsa')
 const cors= require('cors')
+const http = require('http'); 
 app.use(express.json());
 const testModel=require("./models/testModel")
 const restaurantModel=require("./models/restaurantModel")
@@ -188,6 +189,7 @@ app.get('/api/proxy', (req, res) => {
     apiRes.on('end', () => {
       console.log(`Response from API: ${data}`);
       res.status(200).send(data);
+      console.log(data)
     });
   }).on('error', (err) => {
     console.error('Error fetching data from external API:', err.message);
