@@ -20,6 +20,7 @@ const voucherModel=require("./models/voucherModel")
 const cron = require('node-cron');
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
+const axios = require('axios');
 const { DateTime } = require('luxon');
 const allowedOrigins = [
     'http://localhost:3000',
@@ -196,7 +197,9 @@ app.get('/api/proxy', (req, res) => {
     res.status(500).send({ message: 'Error fetching data from API', error: err.message });
   });
 });
+
 app.use(jwtCheck);
+
 app.post('/signUp', async (req, res) => {
   const { userID} = req.body;
   try {
@@ -211,6 +214,45 @@ app.post('/signUp', async (req, res) => {
       res.status(201).json({ message: 'User added successfully' });
   } catch (error) {
       res.status(500).json({ message: 'Error adding user', error: error.message });
+  }
+});
+
+
+app.post('/purchaseCredits', async (req, res) => {
+  const { userID, amount, yocoToken } = req.body;
+
+  try {
+    // Verify the payment with Yoco
+    const yocoResponse = await axios.post('https://online.yoco.com/v1/charges/', {
+      token: yocoToken,
+      amountInCents: Math.round(amount * 100),
+      currency: 'ZAR'
+    }, {
+      headers: {
+        'X-Auth-Secret-Key': 'sk_test_5ae74a39AWQylel12f9458ba0768'
+      }
+    });
+
+    if (yocoResponse.data.status === 'successful') {
+      // Payment was successful, update user's credits
+      const user = await userModel.findOne({ userID });
+      if (!user) {
+        return res.status(404).send({ message: 'User not found' });
+      }
+
+      user.credits += parseFloat(amount);
+      await user.save();
+
+      res.status(200).send({ 
+        message: 'Credits purchased successfully', 
+        credits: user.credits 
+      });
+    } else {
+      res.status(400).send({ message: 'Payment failed' });
+    }
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    res.status(500).send({ message: 'Server error processing the payment', error: error.message });
   }
 });
 
