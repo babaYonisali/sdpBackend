@@ -21,6 +21,7 @@ const cron = require('node-cron');
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 const { DateTime } = require('luxon');
+
 const allowedOrigins = [
     'http://localhost:3000',
     'https://calm-bush-0adbb231e.5.azurestaticapps.net'
@@ -49,20 +50,7 @@ const jwtCheck = jwt({
     issuer: `https://dev-vd2n3gc57jtwv2md.us.auth0.com/`,
     algorithms: ['RS256']
   });
-  
- 
 
-
-  // app.post('/signUp', async (req, res) => {
-    //   const {userID} = req.body;
-    //   try {
-    //       await testModel.insertMany([req.body]); // Using an array as insertMany expects an array
-    //       res.status(201).json({ message: 'User added successfully' });
-    //   } catch (error) {
-    //       res.status(500).json({ message: 'Error adding user', error: error.message });
-    //   }
-    // });
-    
 app.get('/', (req, res) => {
   res.send('This is about as far as you are getting to our data!');
 });
